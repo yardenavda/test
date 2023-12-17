@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>minesweeper</title>
+</head>
+<body>
+    <canvas width="600" height="600" id="canvas" onclick="update()"></canvas>
+    <button id="button" onclick="flag_or_not()">flag</button>
+    <h1 id=information></h1>
+    <a href="main.html"><button>main</button></a>
+    <script type="text/javascript">let canves = document.getElementById("canvas");
+let information = document.getElementById("information");
+let button = document.getElementById("button");
+const ctx = canvas.getContext('2d');
+ctx.strokeStyle = 'black';
+ctx.font = "50px Impact";  
+let world = [];
+let x = 0;
+let y = 0;
+let will_reveld = [];
+let flag = false;
+class squre{
+    constructor(x,y,world){
+        this.boom = false;
+        this.x = x;
+        this.y = y;
+        this.revel = false;
+        this.nighbers = 0;
+        this.flag = false;
+    }
+    count_nighbers(world){
+        for (let i = -1; i < 2; i++) {
+            for (let j = -1; j < 2; j++) {
+                if((world[(this.x/60)+i] !== undefined)){
+                    if (world[(this.x/60)+i][(this.y/60)+j] !== undefined) {
+                        if (world[(this.x/60)+i][(this.y/60)+j].boom){
+                            world[(this.x/60)][(this.y/60)].nighbers++;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    draw(){
+        if(this.revel === false){
+            if(this.flag){
+            ctx.beginPath();
+            ctx.moveTo(this.x+5, this.y+55);
+            ctx.lineTo(this.x + 5, this.y+5);
+            ctx.lineTo(this.x + 55, this.y + 5);
+            ctx.lineTo(this.x + 5, this.y+55);
+            ctx.fill();
+        }
+        }
+        else{
+                if (this.boom){
+                    ctx.rect(this.x+5,this.y+5,50,50);
+                    ctx.fill();
+                }
+                else{
+                    ctx.strokeRect(this.x+5,this.y+5,50,50);
+                    ctx.fillText( this.nighbers, this.x+17, this.y+50 );
+                }
+            }
+        ctx.strokeRect(this.x,this.y,60,60);
+        }
+
+    revel_squre(world,r,information){
+        this.revel = true;
+        this.flag = false;
+        if (this.nighbers === 0){
+            for (let i = -1; i < 2; i++) {
+                for (let j = -1; j < 2; j++) {
+                    if((world[(this.x/60)+i] !== undefined)){
+                        if (world[(this.x/60)+i][(this.y/60)+j] !== undefined && world[(this.x/60)+i][(this.y/60)+j].revel === false) {
+                            r.push(world[(this.x/60)+i][(this.y/60)+j]);
+                            
+                        }
+                    }
+                }
+            }
+        }
+        if(world[(this.x/60)][(this.y/60)].boom){
+            information.innerHTML = 'you lose';
+            for (var x = 0; x < world.length; x++) {
+                for (var y = 0; y < world.length; y++) {
+                    if (world[x][y].revel === false){
+                        will_reveld.push(world[x][y])
+                }
+                }
+            }
+        }
+    }
+}
+for (var i = 0; i < 10; i++) {
+    world.push([]);
+    for (var j = 0; j < 10; j++) {
+        world[i].push(new squre(i*60,j*60,world));
+    }
+}
+let opitipns = [];
+for (var i = 0; i < 10; i++) {
+        for (var j = 0; j < 10; j++) {
+            opitipns.push(i*10+j);
+        }
+    }
+for (var i = 0; i < 5; i++) {
+
+    p = Math.floor(Math.random()*opitipns.length);
+    world[opitipns[p]%10][Math.floor(opitipns[p]/10)].boom = true;
+    opitipns.splice(p,1);
+    
+    }
+for (var i = 0; i < 10; i++) {
+        for (var j = 0; j < 10; j++) {
+            world[i][j].count_nighbers(world);
+        }
+    }
+for (var i = 0; i < 10; i++) {
+        for (var j = 0; j < 10; j++) {
+            world[i][j].draw();
+        }
+    }
+window.addEventListener('mousemove', (event) => {
+    x = event.clientX;
+    y = event.clientY;
+    r = [];
+    for (var i = 0; i < will_reveld.length; i++) {
+        will_reveld[i].revel_squre(world,r,information)
+        will_reveld[i].draw();
+    }
+    will_reveld = r.slice();
+});
+function update() {
+    ctx.clearRect(0, 0, 1200, 700);
+    ctx.beginPath();
+    if(flag){
+    if(world[Math.floor(x/60)][Math.floor(y/60)].revel === false){
+    world[Math.floor(x/60)][Math.floor(y/60)].flag = true;  
+}
+    }
+    else{
+    world[Math.floor(x/60)][Math.floor(y/60)].revel_squre(world,will_reveld,information);
+    }
+    win = information.innerHTML !== "you lose";
+    for (var i = 0; i < 10; i++) {
+        for (var j = 0; j < 10; j++) {
+            world[i][j].draw();
+            if(world[i][j].boom === false && world[i][j].revel === false){
+                win = false
+            }
+        }
+    }
+    if(win){
+        information.innerHTML = 'you won';
+
+    }
+}
+function flag_or_not(){
+    flag = flag === false;
+    if(flag){
+        button.innerHTML = "standard"
+    }
+    else{
+        button.innerHTML = "flag"
+    }
+    
+
+}
+</script>
+</body>
+</html>
